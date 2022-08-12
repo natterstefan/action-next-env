@@ -1,12 +1,13 @@
 import path from 'path'
 
 import * as core from '@actions/core'
-import {DotenvParseOutput, parse} from 'dotenv'
+import {parse} from 'dotenv'
 import {loadEnvConfig} from '@next/env'
 
 type Environment = 'test' | 'production' | 'development'
+type Input = {environment: Environment; pathToEnv: string}
 
-const getInput = (): {environment: Environment; pathToEnv: string} => {
+const getInput = (): Input => {
   const environment = core.getInput('environment') as Environment
   const pathToEnv = core.getInput('path') || '.'
 
@@ -19,15 +20,31 @@ const getInput = (): {environment: Environment; pathToEnv: string} => {
 const loadEnvVariables = (
   mode: Environment,
   pathToEnv: string
-): DotenvParseOutput => {
+): Record<string, string | undefined> => {
   const isDevelopment = mode !== 'production'
 
-  const result = loadEnvConfig(path.join(pathToEnv), isDevelopment, {
-    info: core.debug,
+  const nextEnvResult = loadEnvConfig(path.join(pathToEnv), isDevelopment, {
+    info: core.info,
     error: core.error
   })
+  const parsedResult = parse(
+    nextEnvResult.loadedEnvFiles.map(e => e.contents).join('\n')
+  )
 
-  return parse(result.loadedEnvFiles.map(e => e.contents).join('\n'))
+  /**
+   * parsedResult does not account for overwrites but gives us a way to get the
+   * keys we are looking for in process.env.
+   *
+   * To get the actual .env variable values respecting the .env read order, we
+   * get them from process.env and return the results.
+   */
+  const res: Record<string, string | undefined> = {}
+  // eslint-disable-next-line github/array-foreach
+  Object.keys(parsedResult).forEach(k => {
+    res[k] = nextEnvResult.combinedEnv[k]
+  })
+
+  return res
 }
 
 const exportEnvVariables = (env: Record<string, string | undefined>): void => {
