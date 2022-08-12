@@ -1,105 +1,76 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+# action-next-env
 
-# Create a JavaScript Action using TypeScript
+> GitHub Action to read .env files like Next.js and add variables to GITHUB_ENV
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+## Usage
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+```yaml
+- name: Load .env file
+  uses: natterstefan/action-next-env@v1
+  with:
+    path: custom/path/to/folder/with/env
+    environment: development
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+- name: Some other action
+  run: |
+    echo "HELLO Variable: ${{ env.HELLO }}"
+```
 
-## Create an action from this template
+## Development
 
-Click the `Use this Template` and provide the new repo details for your action
+> First, you'll need to have a reasonably modern version of `node` handy. This
+> won't work with versions older than 16, for instance.
 
-## Code in Main
+Install the dependencies
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
-
-Install the dependencies  
 ```bash
-$ npm install
+npm install
 ```
 
 Build the typescript and package it for distribution
+
 ```bash
-$ npm run build && npm run package
+npm run package
 ```
 
-Run the tests :heavy_check_mark:  
+Run the tests
+
 ```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
+npm test
 ```
 
-## Change action.yml
+### LICENSE
 
-The action.yml defines the inputs and output for your action.
+[MIT](LICENSE)
 
-Update the action.yml with your name, description, inputs and outputs for your action.
+### Misc Ressources
 
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
+- [@next/env - npm](https://www.npmjs.com/package/@next/env)
+- [dotenv - npm](https://www.npmjs.com/package/dotenv)
+- [dotenv-expand - npm](https://www.npmjs.com/package/dotenv-expand)
+- [example versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
 
-## Change the Code
+### Similar actions
 
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
+- [xom9ikk/dotenv: GitHub Action to read .env file and add variables to GITHUB_ENV](https://github.com/xom9ikk/dotenv)
+- [falti/dotenv-action: Provide common parameters via .env file](https://github.com/falti/dotenv-action)
 
-```javascript
-import * as core from '@actions/core';
-...
+## Contributors ✨
 
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
-run()
-```
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://natterstefan.me/"><img src="https://avatars.githubusercontent.com/u/1043668?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Stefan Natter</b></sub></a><br /><a href="#ideas-natterstefan" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/natterstefan/action-next-env/commits?author=natterstefan" title="Code">💻</a> <a href="https://github.com/natterstefan/action-next-env/commits?author=natterstefan" title="Documentation">📖</a></td>
+  </tr>
+</table>
 
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
 
-## Publish to a distribution branch
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
-Actions are run from GitHub repos so we will checkin the packed dist folder. 
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

@@ -6,6 +6,10 @@ on: # rebuild any PRs and main branch changes
       - main
       - 'releases/*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
@@ -21,4 +25,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./
         with:
-          milliseconds: 1000
+          environment: 'development'
+
+      - name: Test
+        run: |
+          echo "Variable 1: ${{ env.HELLO }}"
+          echo "Variable 2: ${{ env.FOO }}"

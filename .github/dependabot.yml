@@ -3,9 +3,25 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: 'weekly'
+      # Check for npm updates on Mondays
+      day: 'monday'
+      # Check for npm updates at 3am UTC
+      time: '03:00'
+    open-pull-requests-limit: 10
+    # Raise all npm pull requests with custom labels
+    labels:
+      - 'dependencies'
 
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: daily
+      interval: 'weekly'
+      # Check for npm updates on Mondays
+      day: 'monday'
+      # Check for npm updates at 3am UTC
+      time: '03:00'
+    open-pull-requests-limit: 10
+    # Raise all npm pull requests with custom labels
+    labels:
+      - 'dependencies'

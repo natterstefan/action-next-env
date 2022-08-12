@@ -1,16 +1,55 @@
+import path from 'path'
+
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {DotenvParseOutput, parse} from 'dotenv'
+import {loadEnvConfig} from '@next/env'
+
+type Environment = 'test' | 'production' | 'development'
+
+const getInput = (): {environment: Environment; pathToEnv: string} => {
+  const environment = core.getInput('environment') as Environment
+  const pathToEnv = core.getInput('path') || '.'
+
+  return {
+    environment,
+    pathToEnv
+  }
+}
+
+const loadEnvVariables = (
+  mode: Environment,
+  pathToEnv: string
+): DotenvParseOutput => {
+  const isDevelopment = mode !== 'production'
+
+  const result = loadEnvConfig(path.join(pathToEnv), isDevelopment, {
+    info: core.debug,
+    error: core.error
+  })
+
+  return parse(result.loadedEnvFiles.map(e => e.contents).join('\n'))
+}
+
+const exportEnvVariables = (env: Record<string, string | undefined>): void => {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key in env) {
+    if (env[key] && typeof env[key] === 'string') {
+      core.setSecret(env[key] as string)
+      core.exportVariable(key, env[key])
+    }
+  }
+}
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const {environment, pathToEnv} = getInput()
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    core.debug(`Reading environment ...`)
+    exportEnvVariables(loadEnvVariables(environment, pathToEnv))
+    core.debug(`Read environment and set secrets ...`)
 
-    core.setOutput('time', new Date().toTimeString())
+    core.setOutput('loadedEnv', true)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
