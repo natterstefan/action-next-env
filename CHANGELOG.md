@@ -1,5 +1,12 @@
 # action-next-env Changelog
 
+### [1.0.1](https://github.com/natterstefan/action-next-env/compare/v1.0.0...v1.0.1) (2022-08-12)
+
+
+### Bug Fixes
+
+* respect .env read order when setting env variables (handle overwrites) ([#17](https://github.com/natterstefan/action-next-env/issues/17)) ([810711f](https://github.com/natterstefan/action-next-env/commit/810711fbb22931ebc8a412e64c75f4407f6e297a))
+
 ## 1.0.0 (2022-08-12)
 
 
