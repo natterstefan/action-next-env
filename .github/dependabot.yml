@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    reviewers:
+      - 'natterstefan'
     schedule:
       interval: 'weekly'
       # Check for npm updates on Mondays
@@ -15,6 +17,8 @@ updates:
 
   - package-ecosystem: npm
     directory: /
+    reviewers:
+      - 'natterstefan'
     schedule:
       interval: 'weekly'
       # Check for npm updates on Mondays
