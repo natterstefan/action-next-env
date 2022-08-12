@@ -56,11 +56,24 @@ const getInput = () => {
 };
 const loadEnvVariables = (mode, pathToEnv) => {
     const isDevelopment = mode !== 'production';
-    const result = (0, env_1.loadEnvConfig)(path_1.default.join(pathToEnv), isDevelopment, {
-        info: core.debug,
+    const nextEnvResult = (0, env_1.loadEnvConfig)(path_1.default.join(pathToEnv), isDevelopment, {
+        info: core.info,
         error: core.error
     });
-    return (0, dotenv_1.parse)(result.loadedEnvFiles.map(e => e.contents).join('\n'));
+    const parsedResult = (0, dotenv_1.parse)(nextEnvResult.loadedEnvFiles.map(e => e.contents).join('\n'));
+    /**
+     * parsedResult does not account for overwrites but gives us a way to get the
+     * keys we are looking for in process.env.
+     *
+     * To get the actual .env variable values respecting the .env read order, we
+     * get them from process.env and return the results.
+     */
+    const res = {};
+    // eslint-disable-next-line github/array-foreach
+    Object.keys(parsedResult).forEach(k => {
+        res[k] = nextEnvResult.combinedEnv[k];
+    });
+    return res;
 };
 const exportEnvVariables = (env) => {
     // eslint-disable-next-line no-restricted-syntax
