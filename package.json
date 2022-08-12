@@ -1,7 +1,7 @@
 {
   "name": "action-next-env",
   "version": "0.0.0",
-  "description": "Loads .env variables in Next.js projects and sets them as GitHub Action Secrets.",
+  "description": "Read .env.[development|test|production][.local] files in Next.js projects and add variables as secrets to GITHUB_ENV",
   "author": {
     "name": "Stefan Natter",
     "url": "https://natterstefan.me>"
