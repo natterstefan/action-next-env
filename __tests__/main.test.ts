@@ -26,4 +26,13 @@ describe('action-next-env', () => {
     expect(process.env.HELLO).toBe('SUN')
     expect(process.env.ANSWER).toBe('42')
   })
+
+  it('does not overwrite existing env variables', () => {
+    process.env.HELLO = 'MOON'
+
+    // eslint-disable-next-line global-require, @typescript-eslint/no-require-imports
+    require('../src/main.ts')
+
+    expect(process.env.HELLO).toBe('MOON')
+  })
 })
