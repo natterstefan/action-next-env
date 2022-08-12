@@ -1,6 +1,6 @@
 name: 'next-env'
 description: 'Loads .env variables in Next.js projects and sets them as GitHub Action Secrets.'
-author: 'Stefan Natter <https://natterstefan.me>'
+author: 'Stefan Natter (https://natterstefan.me)'
 runs:
   using: 'node16'
   main: 'dist/index.js'
