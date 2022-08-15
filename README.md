@@ -1,7 +1,8 @@
 # action-next-env
 
 > GitHub Action to read .env.[development|test|production][.local] files in
-> Next.js projects and add variables as secrets to GITHUB_ENV
+> Next.js (but also non Next.js) projects and add variables as secrets to
+> GITHUB_ENV.
 
 ## Usage
 
