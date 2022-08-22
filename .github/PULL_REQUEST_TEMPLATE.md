@@ -7,11 +7,8 @@ release.
 
 # TASK
 
-## What I did
+## Changes
 
 <!--
-- Is this testable with Jest?
-- Does this need an update to the documentation?
-
-If your answer is yes to any of these, please make sure to include it in your PR.
-- -->
+Describe what has changed, please.
+-->
