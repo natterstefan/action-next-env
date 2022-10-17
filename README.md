@@ -32,7 +32,9 @@ npm install
 Build the typescript and package it for distribution
 
 ```bash
+# package the source files
 npm run package
+# afterward create a release for instance with one of the release GitHub actions
 ```
 
 Run the tests

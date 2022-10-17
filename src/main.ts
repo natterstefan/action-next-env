@@ -66,6 +66,7 @@ async function run(): Promise<void> {
     exportEnvVariables(loadEnvVariables(environment, pathToEnv))
     core.debug(`Read environment and set secrets ...`)
 
+    // sets the step's output parameter.
     core.setOutput('loadedEnv', true)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

@@ -92,6 +92,7 @@ function run() {
             core.debug(`Reading environment ...`);
             exportEnvVariables(loadEnvVariables(environment, pathToEnv));
             core.debug(`Read environment and set secrets ...`);
+            // sets the step's output parameter.
             core.setOutput('loadedEnv', true);
         }
         catch (error) {
@@ -244,7 +245,6 @@ const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(278);
 const os = __importStar(__nccwpck_require__(37));
 const path = __importStar(__nccwpck_require__(17));
-const uuid_1 = __nccwpck_require__(840);
 const oidc_utils_1 = __nccwpck_require__(41);
 /**
  * The code to exit an action
@@ -274,20 +274,9 @@ function exportVariable(name, val) {
     process.env[name] = convertedVal;
     const filePath = process.env['GITHUB_ENV'] || '';
     if (filePath) {
-        const delimiter = `ghadelimiter_${uuid_1.v4()}`;
-        // These should realistically never happen, but just in case someone finds a way to exploit uuid generation let's not allow keys or values that contain the delimiter.
-        if (name.includes(delimiter)) {
-            throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
-        }
-        if (convertedVal.includes(delimiter)) {
-            throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
-        }
-        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
-        file_command_1.issueCommand('ENV', commandValue);
+        return file_command_1.issueFileCommand('ENV', file_command_1.prepareKeyValueMessage(name, val));
     }
-    else {
-        command_1.issueCommand('set-env', { name }, convertedVal);
-    }
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -305,7 +294,7 @@ exports.setSecret = setSecret;
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_1.issueCommand('PATH', inputPath);
+        file_command_1.issueFileCommand('PATH', inputPath);
     }
     else {
         command_1.issueCommand('add-path', {}, inputPath);
@@ -345,7 +334,10 @@ function getMultilineInput(name, options) {
     const inputs = getInput(name, options)
         .split('\n')
         .filter(x => x !== '');
-    return inputs;
+    if (options && options.trimWhitespace === false) {
+        return inputs;
+    }
+    return inputs.map(input => input.trim());
 }
 exports.getMultilineInput = getMultilineInput;
 /**
@@ -378,8 +370,12 @@ exports.getBooleanInput = getBooleanInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('OUTPUT', file_command_1.prepareKeyValueMessage(name, value));
+    }
     process.stdout.write(os.EOL);
-    command_1.issueCommand('set-output', { name }, value);
+    command_1.issueCommand('set-output', { name }, utils_1.toCommandValue(value));
 }
 exports.setOutput = setOutput;
 /**
@@ -508,7 +504,11 @@ exports.group = group;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
-    command_1.issueCommand('save-state', { name }, value);
+    const filePath = process.env['GITHUB_STATE'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('STATE', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    command_1.issueCommand('save-state', { name }, utils_1.toCommandValue(value));
 }
 exports.saveState = saveState;
 /**
@@ -574,13 +574,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.issueCommand = void 0;
+exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(147));
 const os = __importStar(__nccwpck_require__(37));
+const uuid_1 = __nccwpck_require__(840);
 const utils_1 = __nccwpck_require__(278);
-function issueCommand(command, message) {
+function issueFileCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
@@ -592,7 +593,22 @@ function issueCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueCommand = issueCommand;
+exports.issueFileCommand = issueFileCommand;
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${uuid_1.v4()}`;
+    const convertedValue = utils_1.toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
+}
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
@@ -1854,7 +1870,7 @@ exports.checkBypass = checkBypass;
 /***/ 888:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-(()=>{var e={41:e=>{"use strict";function _interpolate(e,r,n){const t=e.match(/(.?\${*[\w]*(?::-)?[\w]*}*)/g)||[];return t.reduce((function(e,o,s){const c=/(.?)\${*([\w]*(?::-)?[\w]*)?}*/g.exec(o);if(!c||c.length===0){return e}const i=c[1];let a,_;if(i==="\\"){_=c[0];a=_.replace("\\$","$")}else{const o=c[2].split(":-");const l=o[0];_=c[0].substring(i.length);a=Object.prototype.hasOwnProperty.call(r,l)?r[l]:n.parsed[l]||o[1]||"";if(o.length>1&&a){const r=t[s+1];t[s+1]="";e=e.replace(r,"")}a=_interpolate(a,r,n)}return e.replace(_,a)}),e)}function expand(e){const r=e.ignoreProcessEnv?{}:process.env;for(const n in e.parsed){const t=Object.prototype.hasOwnProperty.call(r,n)?r[n]:e.parsed[n];e.parsed[n]=_interpolate(t,r,e)}for(const n in e.parsed){r[n]=e.parsed[n]}return e}e.exports.j=expand},234:(e,r,n)=>{var t;const o=n(147);const s=n(17);const c=n(37);function log(e){console.log(`[dotenv][DEBUG] ${e}`)}const i="\n";const a=/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;const _=/\\n/g;const l=/\r\n|\n|\r/;function parse(e,r){const n=Boolean(r&&r.debug);const t={};e.toString().split(l).forEach((function(e,r){const o=e.match(a);if(o!=null){const e=o[1];let r=o[2]||"";const n=r.length-1;const s=r[0]==='"'&&r[n]==='"';const c=r[0]==="'"&&r[n]==="'";if(c||s){r=r.substring(1,n);if(s){r=r.replace(_,i)}}else{r=r.trim()}t[e]=r}else if(n){log(`did not match key and value when parsing line ${r+1}: ${e}`)}}));return t}function resolveHome(e){return e[0]==="~"?s.join(c.homedir(),e.slice(1)):e}function config(e){let r=s.resolve(process.cwd(),".env");let n="utf8";let t=false;if(e){if(e.path!=null){r=resolveHome(e.path)}if(e.encoding!=null){n=e.encoding}if(e.debug!=null){t=true}}try{const e=parse(o.readFileSync(r,{encoding:n}),{debug:t});Object.keys(e).forEach((function(r){if(!Object.prototype.hasOwnProperty.call(process.env,r)){process.env[r]=e[r]}else if(t){log(`"${r}" is already defined in \`process.env\` and will not be overwritten`)}}));return{parsed:e}}catch(e){return{error:e}}}t=config;e.exports.Q=parse},147:e=>{"use strict";e.exports=__nccwpck_require__(147)},37:e=>{"use strict";e.exports=__nccwpck_require__(37)},17:e=>{"use strict";e.exports=__nccwpck_require__(17)}};var r={};function __nccwpck_require2_(n){var t=r[n];if(t!==undefined){return t.exports}var o=r[n]={exports:{}};var s=true;try{e[n](o,o.exports,__nccwpck_require2_);s=false}finally{if(s)delete r[n]}return o.exports}(()=>{__nccwpck_require2_.n=e=>{var r=e&&e.__esModule?()=>e["default"]:()=>e;__nccwpck_require2_.d(r,{a:r});return r}})();(()=>{__nccwpck_require2_.d=(e,r)=>{for(var n in r){if(__nccwpck_require2_.o(r,n)&&!__nccwpck_require2_.o(e,n)){Object.defineProperty(e,n,{enumerable:true,get:r[n]})}}}})();(()=>{__nccwpck_require2_.o=(e,r)=>Object.prototype.hasOwnProperty.call(e,r)})();(()=>{__nccwpck_require2_.r=e=>{if(typeof Symbol!=="undefined"&&Symbol.toStringTag){Object.defineProperty(e,Symbol.toStringTag,{value:"Module"})}Object.defineProperty(e,"__esModule",{value:true})}})();if(typeof __nccwpck_require2_!=="undefined")__nccwpck_require2_.ab=__dirname+"/";var n={};(()=>{"use strict";__nccwpck_require2_.r(n);__nccwpck_require2_.d(n,{processEnv:()=>processEnv,loadEnvConfig:()=>loadEnvConfig});var e=__nccwpck_require2_(147);var r=__nccwpck_require2_.n(e);var t=__nccwpck_require2_(17);var o=__nccwpck_require2_.n(t);var s=__nccwpck_require2_(234);var c=__nccwpck_require2_(41);let i=undefined;let a=[];function processEnv(e,r,n=console){var o;if(process.env.__NEXT_PROCESSED_ENV||e.length===0){return process.env}process.env.__NEXT_PROCESSED_ENV="true";const i=Object.assign({},process.env);const a={};for(const _ of e){try{let e={};e.parsed=s.Q(_.contents);e=(0,c.j)(e);if(e.parsed){n.info(`Loaded env from ${t.join(r||"",_.path)}`)}for(const r of Object.keys(e.parsed||{})){if(typeof a[r]==="undefined"&&typeof i[r]==="undefined"){a[r]=(o=e.parsed)===null||o===void 0?void 0:o[r]}}}catch(e){n.error(`Failed to load env from ${t.join(r||"",_.path)}`,e)}}return Object.assign(process.env,a)}function loadEnvConfig(r,n,o=console){if(i)return{combinedEnv:i,loadedEnvFiles:a};const s=process.env.NODE_ENV==="test";const c=s?"test":n?"development":"production";const _=[`.env.${c}.local`,c!=="test"&&`.env.local`,`.env.${c}`,".env"].filter(Boolean);for(const n of _){const s=t.join(r,n);try{const r=e.statSync(s);if(!r.isFile()){continue}const t=e.readFileSync(s,"utf8");a.push({path:n,contents:t})}catch(e){if(e.code!=="ENOENT"){o.error(`Failed to load env from ${n}`,e)}}}i=processEnv(a,r,o);return{combinedEnv:i,loadedEnvFiles:a}}})();module.exports=n})();
+(()=>{var e={840:e=>{"use strict";function _interpolate(e,r,n){const t=e.match(/(.?\${*[\w]*(?::-)?[\w]*}*)/g)||[];return t.reduce((function(e,o,s){const c=/(.?)\${*([\w]*(?::-)?[\w]*)?}*/g.exec(o);if(!c||c.length===0){return e}const i=c[1];let a,_;if(i==="\\"){_=c[0];a=_.replace("\\$","$")}else{const o=c[2].split(":-");const l=o[0];_=c[0].substring(i.length);a=Object.prototype.hasOwnProperty.call(r,l)?r[l]:n.parsed[l]||o[1]||"";if(o.length>1&&a){const r=t[s+1];t[s+1]="";e=e.replace(r,"")}a=_interpolate(a,r,n)}return e.replace(_,a)}),e)}function expand(e){const r=e.ignoreProcessEnv?{}:process.env;for(const n in e.parsed){const t=Object.prototype.hasOwnProperty.call(r,n)?r[n]:e.parsed[n];e.parsed[n]=_interpolate(t,r,e)}for(const n in e.parsed){r[n]=e.parsed[n]}return e}e.exports.j=expand},358:(e,r,n)=>{var t;const o=n(147);const s=n(17);const c=n(37);function log(e){console.log(`[dotenv][DEBUG] ${e}`)}const i="\n";const a=/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;const _=/\\n/g;const l=/\r\n|\n|\r/;function parse(e,r){const n=Boolean(r&&r.debug);const t={};e.toString().split(l).forEach((function(e,r){const o=e.match(a);if(o!=null){const e=o[1];let r=o[2]||"";const n=r.length-1;const s=r[0]==='"'&&r[n]==='"';const c=r[0]==="'"&&r[n]==="'";if(c||s){r=r.substring(1,n);if(s){r=r.replace(_,i)}}else{r=r.trim()}t[e]=r}else if(n){log(`did not match key and value when parsing line ${r+1}: ${e}`)}}));return t}function resolveHome(e){return e[0]==="~"?s.join(c.homedir(),e.slice(1)):e}function config(e){let r=s.resolve(process.cwd(),".env");let n="utf8";let t=false;if(e){if(e.path!=null){r=resolveHome(e.path)}if(e.encoding!=null){n=e.encoding}if(e.debug!=null){t=true}}try{const e=parse(o.readFileSync(r,{encoding:n}),{debug:t});Object.keys(e).forEach((function(r){if(!Object.prototype.hasOwnProperty.call(process.env,r)){process.env[r]=e[r]}else if(t){log(`"${r}" is already defined in \`process.env\` and will not be overwritten`)}}));return{parsed:e}}catch(e){return{error:e}}}t=config;e.exports.Q=parse},147:e=>{"use strict";e.exports=__nccwpck_require__(147)},37:e=>{"use strict";e.exports=__nccwpck_require__(37)},17:e=>{"use strict";e.exports=__nccwpck_require__(17)}};var r={};function __nccwpck_require2_(n){var t=r[n];if(t!==undefined){return t.exports}var o=r[n]={exports:{}};var s=true;try{e[n](o,o.exports,__nccwpck_require2_);s=false}finally{if(s)delete r[n]}return o.exports}(()=>{__nccwpck_require2_.n=e=>{var r=e&&e.__esModule?()=>e["default"]:()=>e;__nccwpck_require2_.d(r,{a:r});return r}})();(()=>{__nccwpck_require2_.d=(e,r)=>{for(var n in r){if(__nccwpck_require2_.o(r,n)&&!__nccwpck_require2_.o(e,n)){Object.defineProperty(e,n,{enumerable:true,get:r[n]})}}}})();(()=>{__nccwpck_require2_.o=(e,r)=>Object.prototype.hasOwnProperty.call(e,r)})();(()=>{__nccwpck_require2_.r=e=>{if(typeof Symbol!=="undefined"&&Symbol.toStringTag){Object.defineProperty(e,Symbol.toStringTag,{value:"Module"})}Object.defineProperty(e,"__esModule",{value:true})}})();if(typeof __nccwpck_require2_!=="undefined")__nccwpck_require2_.ab=__dirname+"/";var n={};(()=>{"use strict";__nccwpck_require2_.r(n);__nccwpck_require2_.d(n,{processEnv:()=>processEnv,loadEnvConfig:()=>loadEnvConfig});var e=__nccwpck_require2_(147);var r=__nccwpck_require2_.n(e);var t=__nccwpck_require2_(17);var o=__nccwpck_require2_.n(t);var s=__nccwpck_require2_(358);var c=__nccwpck_require2_(840);let i=undefined;let a=undefined;let _=[];let l=[];function processEnv(e,r,n=console,o=false){var a;if(!i){i=Object.assign({},process.env)}if(!o&&(process.env.__NEXT_PROCESSED_ENV||e.length===0)){return process.env}process.env.__NEXT_PROCESSED_ENV="true";const _=Object.assign({},i);const p={};for(const o of e){try{let e={};e.parsed=s.Q(o.contents);e=(0,c.j)(e);if(e.parsed&&!l.some((e=>e.contents===o.contents&&e.path===o.path))){n.info(`Loaded env from ${t.join(r||"",o.path)}`)}for(const r of Object.keys(e.parsed||{})){if(typeof p[r]==="undefined"&&typeof _[r]==="undefined"){p[r]=(a=e.parsed)===null||a===void 0?void 0:a[r]}}}catch(e){n.error(`Failed to load env from ${t.join(r||"",o.path)}`,e)}}return Object.assign(process.env,p)}function loadEnvConfig(r,n,o=console,s=false){if(!i){i=Object.assign({},process.env)}if(a&&!s){return{combinedEnv:a,loadedEnvFiles:_}}process.env=Object.assign({},i);l=_;_=[];const c=process.env.NODE_ENV==="test";const p=c?"test":n?"development":"production";const u=[`.env.${p}.local`,p!=="test"&&`.env.local`,`.env.${p}`,".env"].filter(Boolean);for(const n of u){const s=t.join(r,n);try{const r=e.statSync(s);if(!r.isFile()){continue}const t=e.readFileSync(s,"utf8");_.push({path:n,contents:t})}catch(e){if(e.code!=="ENOENT"){o.error(`Failed to load env from ${n}`,e)}}}a=processEnv(_,r,o,s);return{combinedEnv:a,loadedEnvFiles:_}}})();module.exports=n})();
 
 /***/ }),
 
@@ -1864,6 +1880,9 @@ exports.checkBypass = checkBypass;
 const fs = __nccwpck_require__(147)
 const path = __nccwpck_require__(17)
 const os = __nccwpck_require__(37)
+const packageJson = __nccwpck_require__(968)
+
+const version = packageJson.version
 
 const LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg
 
@@ -1907,7 +1926,7 @@ function parse (src) {
 }
 
 function _log (message) {
-  console.log(`[dotenv][DEBUG] ${message}`)
+  console.log(`[dotenv@${version}][DEBUG] ${message}`)
 }
 
 function _resolveHome (envPath) {
@@ -2985,6 +3004,14 @@ module.exports = require("tls");
 
 "use strict";
 module.exports = require("util");
+
+/***/ }),
+
+/***/ 968:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"name":"dotenv","version":"16.0.3","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"require":"./lib/main.js","types":"./lib/main.d.ts","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","pretest":"npm run lint && npm run dts-check","test":"tap tests/*.js --100 -Rspec","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@types/node":"^17.0.9","decache":"^4.6.1","dtslint":"^3.7.0","sinon":"^12.0.1","standard":"^16.0.4","standard-markdown":"^7.1.0","standard-version":"^9.3.2","tap":"^15.1.6","tar":"^6.1.11","typescript":"^4.5.4"},"engines":{"node":">=12"}}');
 
 /***/ })
 
