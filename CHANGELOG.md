@@ -1,5 +1,12 @@
 # action-next-env Changelog
 
+## [1.1.0](https://github.com/natterstefan/action-next-env/compare/v1.0.1...v1.1.0) (2022-10-17)
+
+
+### Features
+
+* updated (dev)Dependencies ([8bb0a8d](https://github.com/natterstefan/action-next-env/commit/8bb0a8de7b6d02985e4e23d0ffeeffab95d4b936))
+
 ### [1.0.1](https://github.com/natterstefan/action-next-env/compare/v1.0.0...v1.0.1) (2022-08-12)
 
 
