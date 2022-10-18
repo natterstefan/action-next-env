@@ -1,5 +1,12 @@
 # action-next-env Changelog
 
+## [1.1.1](https://github.com/natterstefan/action-next-env/compare/v1.1.0...v1.1.1) (2022-10-18)
+
+
+### Bug Fixes
+
+* added path to action.yml inputs ([8f30c53](https://github.com/natterstefan/action-next-env/commit/8f30c53c29983ea0a808fe16a32c7b451ca429d7))
+
 ## [1.1.0](https://github.com/natterstefan/action-next-env/compare/v1.0.1...v1.1.0) (2022-10-17)
 
 
