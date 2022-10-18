@@ -12,3 +12,7 @@ inputs:
     required: true
     description: 'Define which environment you want to load: development, test or production.'
     default: 'development'
+  path:
+    required: false
+    description: 'Define the path to the folder with the `.env` files.'
+    default: '.'

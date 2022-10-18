@@ -10,7 +10,7 @@
 - name: Load .env file
   uses: natterstefan/action-next-env@v1
   with:
-    path: custom/path/to/folder/with/env
+    path: custom/path/to/folder/with/env # optional, default: .
     environment: development
 
 - name: Some other action
