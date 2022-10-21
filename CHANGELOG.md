@@ -1,5 +1,12 @@
 # action-next-env Changelog
 
+## [1.2.0](https://github.com/natterstefan/action-next-env/compare/v1.1.1...v1.2.0) (2022-10-21)
+
+
+### Features
+
+* added working-directory input support ([c3a1d20](https://github.com/natterstefan/action-next-env/commit/c3a1d20cdca31148b3bfc451a5900555151c64fd))
+
 ## [1.1.1](https://github.com/natterstefan/action-next-env/compare/v1.1.0...v1.1.1) (2022-10-18)
 
 
