@@ -1,4 +1,9 @@
+// ts-check
+
 /* eslint-disable import/no-commonjs */
+/**
+ * @type {import('semantic-release').Options}
+ */
 module.exports = {
   branches: ['main'],
   preset: 'conventionalcommits',

@@ -49,14 +49,17 @@ const env_1 = __nccwpck_require__(888);
 const getInput = () => {
     const environment = core.getInput('environment');
     const pathToEnv = core.getInput('path') || '.';
+    const workingDirectory = core.getInput('working-directory') || process.cwd();
     return {
         environment,
-        pathToEnv
+        pathToEnv,
+        workingDirectory
     };
 };
-const loadEnvVariables = (mode, pathToEnv) => {
-    const isDevelopment = mode !== 'production';
-    const nextEnvResult = (0, env_1.loadEnvConfig)(path_1.default.join(pathToEnv), isDevelopment, {
+const loadEnvVariables = (environment, workingDirectory, pathToEnv) => {
+    const isDevelopment = environment !== 'production';
+    const envPath = path_1.default.join(workingDirectory, pathToEnv);
+    const nextEnvResult = (0, env_1.loadEnvConfig)(envPath, isDevelopment, {
         info: core.info,
         error: core.error
     });
@@ -86,11 +89,13 @@ const exportEnvVariables = (env) => {
 };
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Starting ...`);
         try {
-            const { environment, pathToEnv } = getInput();
+            core.debug(`Reading input ...`);
+            const { environment, pathToEnv, workingDirectory } = getInput();
             // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
             core.debug(`Reading environment ...`);
-            exportEnvVariables(loadEnvVariables(environment, pathToEnv));
+            exportEnvVariables(loadEnvVariables(environment, workingDirectory, pathToEnv));
             core.debug(`Read environment and set secrets ...`);
             // sets the step's output parameter.
             core.setOutput('loadedEnv', true);
@@ -99,6 +104,7 @@ function run() {
             if (error instanceof Error)
                 core.setFailed(error.message);
         }
+        core.debug(`Ended ...`);
     });
 }
 run();

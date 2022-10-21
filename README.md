@@ -6,10 +6,31 @@
 
 ## Usage
 
+```text
+# .env file
+HELLO="WORLD"
+```
+
 ```yaml
 - name: Load .env file
   uses: natterstefan/action-next-env@v1
   with:
+    path: custom/path/to/folder/with/env # optional, default: .
+    environment: development
+
+- name: Some other action
+  run: |
+    echo "HELLO Variable: ${{ env.HELLO }}"
+```
+
+or when using the action in a monorepo setup (but also applicable in other
+cases):
+
+```yaml
+- name: Load .env file
+  uses: natterstefan/action-next-env@v1
+  with:
+    working-directory: 'packages/app'
     path: custom/path/to/folder/with/env # optional, default: .
     environment: development
 

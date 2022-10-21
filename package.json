@@ -52,6 +52,7 @@
     "@semantic-release/release-notes-generator": "^10.0.3",
     "@types/jest": "^28.1.8",
     "@types/node": "^16.11.66",
+    "@types/semantic-release": "^17.2.4",
     "@typescript-eslint/parser": "^5.40.1",
     "@vercel/ncc": "^0.34.0",
     "all-contributors-cli": "^6.24.0",

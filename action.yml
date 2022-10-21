@@ -8,6 +8,9 @@ branding:
   icon: 'sliders'
   color: 'green'
 inputs:
+  working-directory:
+    description: 'the current working directory for the shell running the commands'
+    required: false
   environment:
     required: true
     description: 'Define which environment you want to load: development, test or production.'

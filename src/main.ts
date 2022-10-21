@@ -4,26 +4,29 @@ import * as core from '@actions/core'
 import {parse} from 'dotenv'
 import {loadEnvConfig} from '@next/env'
 
-type Environment = 'test' | 'production' | 'development'
-type Input = {environment: Environment; pathToEnv: string}
+import {Environment, InputValues} from './types'
 
-const getInput = (): Input => {
+const getInput = (): InputValues => {
   const environment = core.getInput('environment') as Environment
   const pathToEnv = core.getInput('path') || '.'
+  const workingDirectory = core.getInput('working-directory') || process.cwd()
 
   return {
     environment,
-    pathToEnv
+    pathToEnv,
+    workingDirectory
   }
 }
 
 const loadEnvVariables = (
-  mode: Environment,
+  environment: Environment,
+  workingDirectory: string,
   pathToEnv: string
 ): Record<string, string | undefined> => {
-  const isDevelopment = mode !== 'production'
+  const isDevelopment = environment !== 'production'
+  const envPath = path.join(workingDirectory, pathToEnv)
 
-  const nextEnvResult = loadEnvConfig(path.join(pathToEnv), isDevelopment, {
+  const nextEnvResult = loadEnvConfig(envPath, isDevelopment, {
     info: core.info,
     error: core.error
   })
@@ -58,12 +61,16 @@ const exportEnvVariables = (env: Record<string, string | undefined>): void => {
 }
 
 async function run(): Promise<void> {
+  core.debug(`Starting ...`)
   try {
-    const {environment, pathToEnv} = getInput()
+    core.debug(`Reading input ...`)
+    const {environment, pathToEnv, workingDirectory} = getInput()
 
     // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
     core.debug(`Reading environment ...`)
-    exportEnvVariables(loadEnvVariables(environment, pathToEnv))
+    exportEnvVariables(
+      loadEnvVariables(environment, workingDirectory, pathToEnv)
+    )
     core.debug(`Read environment and set secrets ...`)
 
     // sets the step's output parameter.
@@ -71,6 +78,8 @@ async function run(): Promise<void> {
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
+
+  core.debug(`Ended ...`)
 }
 
 run()

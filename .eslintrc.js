@@ -10,10 +10,13 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.eslintrc.json'
   },
-  /**
-   * based on default rules from https://github.com/actions/typescript-action
-   */
   rules: {
+    /* custom rules */
+    'import/extensions': 'off',
+
+    /**
+     * based on default rules from https://github.com/actions/typescript-action
+     */
     'i18n-text/no-en': 'off',
     'eslint-comments/no-use': 'off',
     'import/no-namespace': 'off',
