@@ -50,7 +50,7 @@ Install the dependencies
 npm install
 ```
 
-Build the typescript and package it for distribution
+Build the package for distribution
 
 ```bash
 # package the source files
@@ -64,18 +64,18 @@ Run the tests
 npm test
 ```
 
-### LICENSE
+## LICENSE
 
 [MIT](LICENSE)
 
-### Misc Ressources
+## Misc. Ressources
 
 - [@next/env - npm](https://www.npmjs.com/package/@next/env)
 - [dotenv - npm](https://www.npmjs.com/package/dotenv)
 - [dotenv-expand - npm](https://www.npmjs.com/package/dotenv-expand)
 - [example versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
 
-### Similar actions
+## Similar actions
 
 - [xom9ikk/dotenv: GitHub Action to read .env file and add variables to GITHUB_ENV](https://github.com/xom9ikk/dotenv)
 - [falti/dotenv-action: Provide common parameters via .env file](https://github.com/falti/dotenv-action)
