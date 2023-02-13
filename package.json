@@ -57,7 +57,7 @@
     "@vercel/ncc": "^0.34.0",
     "all-contributors-cli": "^6.24.0",
     "conventional-changelog-conventionalcommits": "^5.0.0",
-    "eslint": "^8.25.0",
+    "eslint": "^8.34.0",
     "eslint-config-ns-ts-base": "^3.3.0",
     "eslint-plugin-github": "^4.4.0",
     "eslint-plugin-jest": "^27.1.2",
