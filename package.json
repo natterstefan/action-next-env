@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "@actions/core": "^1.10.0",
-    "@next/env": "^12.3.1",
+    "@next/env": "^13.2.1",
     "dotenv": "^16.0.3"
   },
   "devDependencies": {
