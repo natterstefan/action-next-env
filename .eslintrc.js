@@ -21,6 +21,7 @@ module.exports = {
     'eslint-comments/no-use': 'off',
     'import/no-namespace': 'off',
     'no-unused-vars': 'off',
+
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/explicit-member-accessibility': [
       'error',
@@ -59,6 +60,7 @@ module.exports = {
     '@typescript-eslint/restrict-plus-operands': 'error',
     '@typescript-eslint/type-annotation-spacing': 'error',
     '@typescript-eslint/unbound-method': 'error',
+
     /**
      * @see https://github.com/actions/typescript-action/pull/474
      */

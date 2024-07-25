@@ -42,7 +42,7 @@ cases):
 ## Development
 
 > First, you'll need to have a reasonably modern version of `node` handy. This
-> won't work with versions older than 16, for instance.
+> won't work with versions older than 20, for instance.
 
 Install the dependencies
 
