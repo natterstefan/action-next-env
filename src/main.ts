@@ -54,7 +54,7 @@ const exportEnvVariables = (env: Record<string, string | undefined>): void => {
   // eslint-disable-next-line no-restricted-syntax
   for (const key in env) {
     if (env[key] && typeof env[key] === 'string') {
-      core.setSecret(env[key] as string)
+      core.setSecret(env[key])
       core.exportVariable(key, env[key])
     }
   }

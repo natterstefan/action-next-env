@@ -2,7 +2,7 @@ name: 'next-env'
 description: 'Read .env.[development|test|production][.local] files in Next.js projects and add variables as secrets to GITHUB_ENV'
 author: 'Stefan Natter (https://natterstefan.me)'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 branding:
   icon: 'sliders'
